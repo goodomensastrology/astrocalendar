@@ -7,7 +7,6 @@ from calculation.ephemeris import planet_position, PLANETS
 SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
          "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"]
 
-# aspect name -> target separations on the 0-360 circle
 ASPECT_TARGETS = {
     "conjunction": [0],
     "sextile": [60, 300],
@@ -15,6 +14,13 @@ ASPECT_TARGETS = {
     "trine": [120, 240],
     "opposition": [180],
 }
+
+# A sign change only counts as a real crossing if both sample points are
+# near the target. The signed circular distance also flips sign at the
+# point 180° away from the target (the "antipode"), which is NOT a real
+# crossing. Planets move at most ~1-2° per hourly step, so 30° is a safe
+# margin that excludes antipode false-positives.
+CROSSING_MARGIN = 30.0
 
 
 def _sep360(lon_a, lon_b):
@@ -94,11 +100,14 @@ def find_aspects(planet_a, planet_b, start, end, orb_deg=2.0,
                     crossings.append({"aspect": name, "kind": "leave", "at": t})
             prev_dist[name] = dist
 
-            # --- exact crossings ---
+            # --- exact crossings (with antipode guard) ---
             for tg in targets:
                 cur = _signed_circ_dist(d2, tg)
                 pcur = prev_exact.get((name, tg))
-                if pcur is not None and pcur != 0 and (pcur > 0) != (cur > 0):
+                if (pcur is not None and pcur != 0
+                        and (pcur > 0) != (cur > 0)
+                        and abs(cur) < CROSSING_MARGIN
+                        and abs(pcur) < CROSSING_MARGIN):
                     t0 = t - timedelta(hours=step_hours)
                     exact = _refine_crossing(
                         lambda tt: _signed_circ_dist(
@@ -150,7 +159,9 @@ def find_lunations(start, end, step_hours=1):
             for target, kind in ((0, "New"), (180, "Full")):
                 cur = _signed_circ_dist(d2, target)
                 pcur = _signed_circ_dist(prev_d2, target)
-                if pcur != 0 and (pcur > 0) != (cur > 0):
+                if (pcur != 0 and (pcur > 0) != (cur > 0)
+                        and abs(cur) < CROSSING_MARGIN
+                        and abs(pcur) < CROSSING_MARGIN):
                     t0 = t - timedelta(hours=step_hours)
                     exact = _refine_crossing(
                         lambda tt: _signed_circ_dist(
