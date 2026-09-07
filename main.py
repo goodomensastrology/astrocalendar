@@ -22,8 +22,14 @@ def generate_feed(start, end, output_path="transits.ics"):
                 continue
             orb = config.ORBS.get((a, b),
                                   config.ORBS.get((b, a), config.DEFAULT_ORB))
-            events += list(find_aspects(a, b, start, end, orb_deg=orb,
-                                        emit_orb_events=config.EMIT_ORB_EVENTS))
+            pair_events = list(find_aspects(
+                a, b, start, end, orb_deg=orb,
+                emit_orb_events=config.EMIT_ORB_EVENTS))
+            if not config.INCLUDE_SUN_ASPECTS and "Sun" in (a, b):
+                # Sun aspects off by default — keep only conjunctions
+                pair_events = [e for e in pair_events
+                               if e.get("aspect") == "conjunction"]
+            events += pair_events
 
     if config.INCLUDE_LUNATIONS:
         events += list(find_lunations(start, end))
