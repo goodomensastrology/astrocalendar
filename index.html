@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AstroCal — Astrological Transit Calendar</title>
+<style>
+  :root {
+    --bg: #0f1226;
+    --card: #1a1f3a;
+    --accent: #e8c468;
+    --text: #e8e9f0;
+    --muted: #a0a4c0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 640px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2rem; }
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  h1 .glyph { color: var(--accent); }
+  .tagline { color: var(--muted); }
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  h2 { font-size: 1.15rem; margin-bottom: 0.75rem; color: var(--accent); }
+  .url-box { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .url-box code {
+    flex: 1;
+    background: var(--bg);
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    word-break: break-all;
+    align-self: center;
+  }
+  button {
+    background: var(--accent);
+    color: #1a1f3a;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button:hover { opacity: 0.9; }
+  .btn-primary {
+    display: block;
+    text-align: center;
+    background: var(--accent);
+    color: #1a1f3a;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 0.75rem;
+  }
+  ul { padding-left: 1.25rem; }
+  li { margin-bottom: 0.35rem; }
+  .app { margin-bottom: 1rem; }
+  .app strong { color: var(--text); }
+  .app p { color: var(--muted); font-size: 0.95rem; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span class="glyph">✦</span> AstroCal</h1>
+    <p class="tagline">A self-updating astrological transit calendar for any calendar app.</p>
+  </header>
+
+  <div class="card">
+    <h2>Subscribe to the feed</h2>
+    <p>Copy this URL and add it to your calendar app:</p>
+    <div class="url-box">
+      <code id="feed-url">Loading…</code>
+      <button onclick="copyUrl()">Copy</button>
+    </div>
+    <a id="webcal-link" class="btn-primary" href="#">One-click subscribe (Apple devices)</a>
+  </div>
+
+  <div class="card">
+    <h2>What's included</h2>
+    <ul>
+      <li>🪐 Sign ingresses for all 10 planets</li>
+      <li>△ Aspects — conjunctions, oppositions, squares, trines, sextiles — with exact times and orb windows</li>
+      <li>☉ Sun conjunctions</li>
+      <li>🌑 New Moons &amp; 🌕 Full Moons</li>
+      <li>🌒 Solar &amp; lunar eclipses</li>
+      <li>℞ Retrograde &amp; direct stations</li>
+      <li>🔄 Updates automatically every day</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>How to subscribe</h2>
+    <div class="app">
+      <strong>Google Calendar</strong>
+      <p>Settings → Add calendar → From URL → paste the feed URL.</p>
+    </div>
+    <div class="app">
+      <strong>Apple Calendar (Mac)</strong>
+      <p>File → New Calendar Subscription → paste the feed URL → set auto-refresh to "Every day".</p>
+    </div>
+    <div class="app">
+      <strong>iPhone / iPad</strong>
+      <p>Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar.</p>
+    </div>
+    <div class="app">
+      <strong>Outlook</strong>
+      <p>Add calendar → Subscribe from web → paste the feed URL.</p>
+    </div>
+    <div class="app">
+      <strong>Proton Calendar / Tuta</strong>
+      <p>Settings → Calendars → Add calendar → Subscribe via URL.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Good to know</h2>
+    <ul>
+      <li>Event times are in UTC — your calendar app automatically shows them in your local time zone.</li>
+      <li>The feed regenerates daily, so new transits appear on their own.</li>
+      <li>Your calendar app controls how often it checks for updates (Google can take up to ~24 hours).</li>
+    </ul>
+  </div>
+
+  <footer>Powered by Swiss Ephemeris · Updated daily</footer>
+</div>
+
+<script>
+  // Build the feed URL automatically from this page's own address
+  const base = window.location.origin +
+               window.location.pathname.replace(/\/[^/]*$/, '/').replace(/\/$/, '');
+  const feedUrl = base + '/transits.ics';
+  document.getElementById('feed-url').textContent = feedUrl;
+  document.getElementById('webcal-link').href =
+      feedUrl.replace(/^https?:\/\//, 'webcal://');
+
+  function copyUrl() {
+    navigator.clipboard.writeText(feedUrl).then(() => {
+      const btn = document.querySelector('.url-box button');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+</script>
+</body>
+</html>
