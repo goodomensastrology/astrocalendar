@@ -3,9 +3,11 @@
 import itertools
 from datetime import datetime, timedelta, timezone
 from calculation.ephemeris import PLANETS
-from events.detectors import find_ingress, find_aspects, find_stations, find_eclipses
+from events.detectors import (find_ingress, find_aspects, find_stations,
+                              find_eclipses, find_lunations)
 from generation.ics_generator import build_ics
 import config
+
 
 def generate_feed(start, end, output_path="transits.ics"):
     events = []
@@ -16,8 +18,15 @@ def generate_feed(start, end, output_path="transits.ics"):
 
     if config.INCLUDE_ASPECTS:
         for a, b in itertools.combinations(PLANETS, 2):
-            orb = config.ORBS.get((a, b), config.DEFAULT_ORB)
-            events += list(find_aspects(a, b, start, end, orb_deg=orb))
+            if not config.INCLUDE_MOON_ASPECTS and "Moon" in (a, b):
+                continue
+            orb = config.ORBS.get((a, b),
+                                  config.ORBS.get((b, a), config.DEFAULT_ORB))
+            events += list(find_aspects(a, b, start, end, orb_deg=orb,
+                                        emit_orb_events=config.EMIT_ORB_EVENTS))
+
+    if config.INCLUDE_LUNATIONS:
+        events += list(find_lunations(start, end))
 
     if config.INCLUDE_STATIONS:
         events += list(find_stations(start, end))
@@ -30,6 +39,7 @@ def generate_feed(start, end, output_path="transits.ics"):
     with open(output_path, "w") as f:
         f.write(ics)
     print(f"Wrote {len(events)} events to {output_path}")
+
 
 if __name__ == "__main__":
     now = datetime.now(timezone.utc)
