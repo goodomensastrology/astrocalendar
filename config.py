@@ -21,6 +21,11 @@ INCLUDE_LUNATIONS = True       # New & Full Moons
 # OFF by default. Set to True if you want them.
 INCLUDE_MOON_ASPECTS = False
 
+# Sun aspects (squares, trines, sextiles, oppositions) are OFF by default.
+# Sun CONJUNCTIONS are always kept — they're the most significant Sun transit.
+# Set to True to include all Sun aspects.
+INCLUDE_SUN_ASPECTS = False
+
 # If True, also emits separate "enters orb" / "leaves orb" events.
 # Off by default to keep the calendar clean — the orb window is always
 # noted in each aspect event's description instead.
